@@ -1,4 +1,4 @@
-#!/bin/python3
+#!/usr/bin/env python3
 
 import httplib2
 import csv
@@ -6,6 +6,8 @@ import io
 import pprint
 import datetime
 import collections
+import matplotlib.pyplot
+import matplotlib.dates 
 
 CONFIRMED_URL = ("https://raw.githubusercontent.com"
                  "/CSSEGISandData/COVID-19/master"
@@ -106,5 +108,24 @@ def printReport(region, country, days=10):
                f"{r:>7} "
                f"{dr:>7}"))
 
-printReport('', 'South Africa')
+
+def showCurve(region, country, days=10):
+    reportData = list(report(region, country, confirmed, deaths, recovered))
+    if days is None:
+        days = len(reportData)
+    ddays = [r.date for r in reportData[-days:]]
+    dactive = [r.active_delta for r in reportData[-days:]]
+    dconfirmed = [r.confirmed_delta for r in reportData[-days:]]
+    drecovered = [r.recovered_delta for r in reportData[-days:]]
+    ddeaths = [r.deaths_delta for r in reportData[-days:]]
+    pprint.pprint((ddays, dactive, dconfirmed, drecovered, ddeaths))
+    ax = matplotlib.pyplot.gca()
+    ax.xaxis.set_major_formatter(matplotlib.dates.DateFormatter('%Y-%m-%d'))
+    ax.xaxis.set_major_locator(matplotlib.dates.DayLocator(interval=10))
+    matplotlib.pyplot.plot(ddays, dactive)
+    matplotlib.pyplot.gcf().autofmt_xdate()
+    matplotlib.pyplot.show()
+
+#printReport('', 'South Africa')
+showCurve('', 'South Africa', None)
 
